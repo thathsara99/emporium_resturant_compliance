@@ -1,0 +1,150 @@
+.leave-page {
+  background: transparent;
+}
+
+.leave-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: linear-gradient(118deg, #3a2a20 0%, #704a33 56%, #9f6736 100%);
+  box-shadow: 0 16px 32px rgba(49, 31, 21, 0.24);
+}
+
+.leave-hero-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+.leave-hero-title.ant-typography {
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.leave-hero-subtitle.ant-typography {
+  max-width: 650px;
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.leave-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.leave-date-pill {
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #fff5e8;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  font-weight: 500;
+}
+
+.leave-apply-btn.ant-btn {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.leave-filter-card.ant-card,
+.leave-card.ant-card {
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(61, 40, 27, 0.12);
+  border: 1px solid rgba(177, 133, 86, 0.22);
+}
+
+.leave-filter-card {
+  margin-bottom: 20px;
+}
+
+.leave-filter-label.ant-typography {
+  color: #5a4030;
+  font-weight: 600;
+}
+
+.leave-summary-card .ant-card-head-title {
+  font-weight: 700;
+}
+
+.leave-pie-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.leave-empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #8c715b;
+}
+
+.leave-metric-card.ant-card {
+  border-radius: 12px;
+  min-height: 112px;
+  border: 1px solid rgba(177, 133, 86, 0.24);
+  box-shadow: none;
+}
+
+.leave-metric-card.primary {
+  background: #f7ebdc;
+  border-color: #e2c49e;
+}
+
+.leave-metric-card.warning {
+  background: #fff5e3;
+  border-color: #f0c57b;
+}
+
+.leave-metric-card.success {
+  background: #edf7e8;
+  border-color: #b8d8a1;
+}
+
+.leave-metric-card.highlight {
+  background: #f3eadf;
+  border-color: #d9bb95;
+}
+
+.metric-label.ant-typography {
+  color: #7a5f48;
+  font-size: 13px;
+}
+
+.metric-value.ant-typography {
+  margin: 6px 0 0;
+  color: #4a3323;
+}
+
+.leave-table .ant-table {
+  border-radius: 12px;
+}
+
+.leave-table .ant-table-thead > tr > th {
+  background: #f6ece0;
+  color: #4a3323;
+  font-weight: 600;
+}
+
+.leave-table .ant-table-tbody > tr:hover > td {
+  background: #fbf2e7 !important;
+}
+
+@media (max-width: 768px) {
+  .leave-hero {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .leave-hero-actions {
+    align-items: flex-start;
+  }
+}
