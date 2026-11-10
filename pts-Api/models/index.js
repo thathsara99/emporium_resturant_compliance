@@ -17,6 +17,7 @@ db.Leave = require('./leave')(sequelize, Sequelize.DataTypes);
 db.Attendance = require('./attendance')(sequelize, Sequelize.DataTypes);  
 db.Task = require('./task')(sequelize, Sequelize.DataTypes);
 db.TaskHistory = require('./taskHistory')(sequelize, Sequelize.DataTypes);
+db.TaskComment = require('./taskComment')(sequelize, Sequelize.DataTypes);
 db.Supplier = require('./supplier')(sequelize, Sequelize.DataTypes);
 db.Customer = require('./customer')(sequelize, Sequelize.DataTypes);
 db.CustomerContract = require('./customerContract')(sequelize, Sequelize.DataTypes);

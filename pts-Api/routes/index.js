@@ -97,6 +97,8 @@ router.put('/tasks/:id', authenticate, taskController.updateTask);
 router.patch('/tasks/:id/status', authenticate, taskController.updateTaskStatus);
 router.delete('/tasks/:id', authenticate, taskController.deleteTask);
 router.get('/tasks/:id/history', authenticate, taskController.getTaskHistory);
+router.get('/tasks/:id/comments', authenticate, taskController.getTaskComments);
+router.post('/tasks/:id/comments', authenticate, taskController.addTaskComment);
 
 // Shift routes
 router.get('/shifts', authenticate, shiftController.getShifts);

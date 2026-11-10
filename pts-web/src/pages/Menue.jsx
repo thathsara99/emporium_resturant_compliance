@@ -59,7 +59,7 @@ const DashboardLanding = () => {
             style={{ height: 90, width: 'auto', objectFit: 'contain', marginRight: 20 }}
           />
           <Title level={2} style={{ color: '#222', marginBottom: 0, textAlign: 'left', whiteSpace: 'nowrap' }}>
-            Path To Success Digital Cupboard
+            Vintage Tea Manager
           </Title>
         </div>
 

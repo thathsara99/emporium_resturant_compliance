@@ -188,7 +188,7 @@ const SupplierManagement = () => {
   const exportPdf = () => {
     const doc = new jsPDF();
     const companyName = 'PATH TO SUCCESS CONSULTANTS LTD';
-    const applicationName = 'Digital Cupboard';
+    const applicationName = 'Vintage Tea Manager';
     const reportName = 'Supplier Details Report';
     const generatedOn = dayjs().format('DD/MM/YYYY HH:mm');
 

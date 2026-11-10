@@ -1,13 +1,10 @@
 import React, { useState, useEffect  } from "react";
 import {
-  Layout, Menu, Switch, Avatar, Typography, Space, Dropdown, Drawer, Button, Grid, message
+  Layout, Menu, Avatar, Dropdown, Drawer, Button, Grid, message
 } from "antd";
 import {
-  UserOutlined, HomeOutlined, InfoCircleOutlined, LogoutOutlined, MenuOutlined,
-  SlackCircleFilled,
-  MoneyCollectFilled,
+  UserOutlined, HomeOutlined, LogoutOutlined, MenuOutlined, MenuFoldOutlined, MenuUnfoldOutlined,
   CalendarFilled,
-  WalletFilled,
   TeamOutlined,
   CompassFilled,
   FolderAddFilled,
@@ -21,8 +18,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ConfigProvider, theme } from "antd";
 import { isTokenValid, clearAuthToken, getTimeUntilExpiry, formatTimeRemaining, getCurrentUserRole } from "../utils/auth";
 
-const { Header, Content, Footer } = Layout;
-const { Title } = Typography;
+const { Content, Footer, Sider } = Layout;
 const { useBreakpoint } = Grid;
 
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5000/api';
@@ -34,7 +30,8 @@ const getAuthHeaders = () => {
 
 const MainLayout = ({ children, onLogout }) => {
   
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('vtm-theme') === 'dark');
+  const [navHidden, setNavHidden] = useState(() => localStorage.getItem('vtm-nav-hidden') === '1');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [showSessionWarning, setShowSessionWarning] = useState(false);
@@ -61,6 +58,16 @@ const MainLayout = ({ children, onLogout }) => {
       console.error('Error fetching user profile in MainLayout:', err);
     }
   };
+
+  useEffect(() => {
+    localStorage.setItem('vtm-theme', darkMode ? 'dark' : 'light');
+    document.body.classList.toggle('vtm-dark', darkMode);
+    return () => document.body.classList.remove('vtm-dark');
+  }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('vtm-nav-hidden', navHidden ? '1' : '0');
+  }, [navHidden]);
 
   // Fetch user profile data
   useEffect(() => {
@@ -129,9 +136,6 @@ const MainLayout = ({ children, onLogout }) => {
 
     return () => clearInterval(interval);
   }, [navigate, onLogout]);
-
-  const headerBgColor = '#2d2018';
-  const headerTextColor = 'rgba(255, 246, 234, 0.92)';
 
   const handleLogout = () => {
     if (onLogout) {
@@ -243,166 +247,167 @@ const MainLayout = ({ children, onLogout }) => {
     return '1';
   };
 
+  const accountName = userProfile
+    ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim()
+    : 'Account';
+
+  const themeAndAccount = (
+    <div className="vtm-sider-foot">
+      <div className="vtm-theme-switch" role="group" aria-label="Color theme">
+        <button type="button" className={!darkMode ? 'is-active' : ''} onClick={() => setDarkMode(false)}>
+          Light
+        </button>
+        <button type="button" className={darkMode ? 'is-active' : ''} onClick={() => setDarkMode(true)}>
+          Dark
+        </button>
+      </div>
+      <Dropdown overlay={userMenu} trigger={['click']}>
+        <button type="button" className="vtm-account">
+          <Avatar
+            size="small"
+            src={userProfile?.profilePicture}
+            icon={<UserOutlined />}
+            style={{ backgroundColor: '#9f6736', flexShrink: 0 }}
+          />
+          <span>{accountName || 'Account'}</span>
+        </button>
+      </Dropdown>
+    </div>
+  );
+
+  const themeTokens = darkMode
+    ? {
+        colorPrimary: '#d7a15a',
+        colorInfo: '#d7a15a',
+        colorSuccess: '#7dab55',
+        colorWarning: '#e0a45a',
+        colorError: '#e07a72',
+        colorBgBase: '#16110e',
+        colorBgContainer: '#241c17',
+        colorBgElevated: '#2e241e',
+        colorText: '#f7f1ea',
+        colorTextSecondary: '#d9c7b6',
+        colorBorder: '#4d3b30',
+        colorBorderSecondary: '#3b2d25',
+        borderRadius: 12,
+        wireframe: false,
+      }
+    : {
+        colorPrimary: '#9f6736',
+        colorInfo: '#9f6736',
+        colorSuccess: '#5f8f3b',
+        colorWarning: '#d18a2c',
+        colorError: '#c4493f',
+        colorBgBase: '#fbf6ef',
+        colorBgContainer: '#fffdfb',
+        colorText: '#3b2618',
+        colorTextSecondary: '#7a5a45',
+        colorBorder: '#ead9c6',
+        colorBorderSecondary: '#f0e4d6',
+        borderRadius: 12,
+        wireframe: false,
+      };
+
   return (
     <ConfigProvider
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: {
-          colorPrimary: '#9f6736',
-          colorInfo: '#9f6736',
-          colorSuccess: '#5f8f3b',
-          colorWarning: '#d18a2c',
-          colorError: '#c4493f',
-          borderRadius: 12,
-          wireframe: false,
-        }
+        token: themeTokens,
       }}
     >
-      <Layout
-        className="restaurant-admin-shell"
-        style={{
-          minHeight: "100vh",
-          backgroundImage: `
-            radial-gradient(circle at 8% 12%, rgba(210, 162, 101, 0.14), transparent 34%),
-            radial-gradient(circle at 92% 88%, rgba(117, 69, 44, 0.16), transparent 36%),
-            linear-gradient(160deg, #fbf6ef 0%, #f6ede0 45%, #f2e7d8 100%)
-          `,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      >
-        <Header
-          className="modern-admin-header"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: '0 18px',
-            height: 72,
-            backgroundColor: headerBgColor,
-            zIndex: 1000,
-            margin: '14px 16px 0',
-            borderRadius: 16,
-            border: '1px solid rgba(214, 176, 117, 0.28)',
-            boxShadow: '0 14px 32px rgba(49, 31, 21, 0.24)'
-          }}
-        >
-          <div className="modern-admin-left">
-            <Link to="/home" className="modern-admin-brand">
-              <div className="modern-admin-brand-dot" />
-              <span className="modern-admin-brand-text">Vintage Tea Emporium</span>
-            </Link>
-            {!isMobile && (
-              <Menu
-                theme="dark"
-                mode="horizontal"
-                selectedKeys={[getSelectedMenuKey(location.pathname)]}
-                items={menuItems}
-                className="modern-admin-nav modern-admin-nav-desktop"
-                style={{
-                  backgroundColor: 'transparent',
-                  borderBottom: 'none',
-                  lineHeight: '72px'
-                }}
-              />
-            )}
-          </div>
-
-          <Space size={12} className="modern-admin-right">
-            <div className="modern-theme-toggle-wrap">
-              <span className={`toggle-label ${darkMode ? 'active' : ''}`}>Dark</span>
-              <Switch
-                checked={darkMode}
-                onChange={setDarkMode}
-                checkedChildren="🌙"
-                unCheckedChildren="☀️"
-                className="modern-theme-toggle"
-              />
-              <span className={`toggle-label ${!darkMode ? 'active' : ''}`}>Light</span>
+      <Layout className={`restaurant-admin-shell ${darkMode ? 'is-dark' : ''}`}>
+        {!isMobile && (
+          <Sider
+            width={260}
+            collapsedWidth={0}
+            collapsed={navHidden}
+            trigger={null}
+            className="vtm-sider"
+            theme="dark"
+          >
+            <div className="vtm-sider-brand-row">
+              <Link to="/home" className="vtm-sider-brand">
+                <span className="modern-admin-brand-dot" />
+                <span>
+                  <span className="vtm-sider-kicker">Restaurant workspace</span>
+                  <span className="vtm-sider-name">Vintage Tea Manager</span>
+                </span>
+              </Link>
+              <button
+                type="button"
+                className="vtm-nav-toggle"
+                aria-label="Hide menu"
+                onClick={() => setNavHidden(true)}
+              >
+                <MenuFoldOutlined />
+              </button>
             </div>
-            <Dropdown overlay={userMenu} trigger={['click']}>
-              <Avatar
-                src={userProfile?.profilePicture}
-                icon={<UserOutlined />}
-                style={{ cursor: 'pointer', backgroundColor: '#9f6736' }}
-                onError={() => {
-                  // If image fails to load, it will show the icon instead
-                  console.log('Profile picture failed to load in MainLayout, showing default icon');
-                }}
-              />
-            </Dropdown>
-            {isMobile && (
-              <Button
-                icon={<MenuOutlined style={{ color: '#fff7ef' }} />}
-                type="text"
-                onClick={() => setDrawerVisible(true)}
-              />
+            <Menu
+              theme="dark"
+              mode="inline"
+              selectedKeys={[getSelectedMenuKey(location.pathname)]}
+              items={menuItems}
+              className="vtm-sider-menu"
+            />
+            {themeAndAccount}
+          </Sider>
+        )}
+
+        <Layout className={`vtm-main ${!isMobile && navHidden ? 'is-nav-hidden' : ''}`}>
+          {isMobile && (
+            <Button
+              className="vtm-menu-fab"
+              icon={<MenuOutlined />}
+              aria-label="Open menu"
+              onClick={() => setDrawerVisible(true)}
+            />
+          )}
+          {!isMobile && navHidden && (
+            <Button
+              className="vtm-menu-fab"
+              icon={<MenuUnfoldOutlined />}
+              aria-label="Show menu"
+              onClick={() => setNavHidden(false)}
+            />
+          )}
+          <Content className="vtm-content">
+            {showSessionWarning && (
+              <div className="vtm-session-warning">
+                <span>
+                  Your session will expire in {formatTimeRemaining(getTimeUntilExpiry())}.
+                  Please save your work and log in again if needed.
+                </span>
+                <Button size="small" type="link" onClick={() => setShowSessionWarning(false)}>
+                  Dismiss
+                </Button>
+              </div>
             )}
-          </Space>
-        </Header>
+            {children}
+          </Content>
+
+          <Footer className="vtm-footer">
+            Vintage Tea Manager ©{new Date().getFullYear()}
+          </Footer>
+        </Layout>
 
         <Drawer
-          title="Menu"
+          title="Vintage Tea Manager"
           placement="left"
           onClose={() => setDrawerVisible(false)}
           open={drawerVisible}
           className="modern-admin-drawer"
-          bodyStyle={{ padding: 0 }}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column' } }}
+          width={280}
         >
           <Menu
-            mode="vertical"
+            theme="dark"
+            mode="inline"
+            selectedKeys={[getSelectedMenuKey(location.pathname)]}
             items={menuItems}
-            style={{ borderRight: 0 }}
+            style={{ borderRight: 0, flex: 1, overflow: 'auto', background: 'transparent' }}
           />
+          {themeAndAccount}
         </Drawer>
-
-        <Content style={{
-          margin: "24px 16px",
-          padding: 24,
-          minHeight: 280,
-          background: darkMode ? "#141414" : "rgba(255, 251, 245, 0.88)",
-          borderRadius: 16,
-          backdropFilter: 'blur(8px)',
-          border: darkMode ? '1px solid #2d2d2d' : '1px solid rgba(186, 143, 94, 0.22)',
-          boxShadow: '0 18px 40px rgba(61, 40, 27, 0.08)'
-        }}>
-          {showSessionWarning && (
-            <div style={{
-              backgroundColor: '#fff2e8',
-              border: '1px solid #ffbb96',
-              borderRadius: 6,
-              padding: '12px 16px',
-              marginBottom: 16,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <span style={{ color: '#d46b08' }}>
-                ⚠️ Your session will expire in {formatTimeRemaining(getTimeUntilExpiry())}. 
-                Please save your work and log in again if needed.
-              </span>
-              <Button 
-                size="small" 
-                type="link" 
-                onClick={() => setShowSessionWarning(false)}
-                style={{ color: '#d46b08' }}
-              >
-                Dismiss
-              </Button>
-            </div>
-          )}
-          {children}
-        </Content>
-
-        <Footer style={{
-          textAlign: 'center',
-          background: darkMode ? '#1f1f1f' : '#f0f2f5',
-          padding: '16px 0',
-          borderTop: `1px solid ${darkMode ? '#303030' : '#e8e8e8'}`,
-          color: darkMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(0, 0, 0, 0.65)'
-        }}>
-          Vintage Tea Emporium ©{new Date().getFullYear()}
-        </Footer>
       </Layout>
     </ConfigProvider>
   );

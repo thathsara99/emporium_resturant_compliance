@@ -24,6 +24,134 @@ const getAuthHeaders = () => {
 };
 
 const DATE_FORMAT = 'DD/MM/YYYY';
+const FILE_ACCEPT = 'image/*,.pdf,.doc,.docx,application/pdf';
+
+const inferMimeType = (file) => {
+  if (file?.type) return file.type;
+  const name = (file?.name || '').toLowerCase();
+  if (name.endsWith('.pdf')) return 'application/pdf';
+  if (name.endsWith('.png')) return 'image/png';
+  if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+  if (name.endsWith('.gif')) return 'image/gif';
+  if (name.endsWith('.webp')) return 'image/webp';
+  if (name.endsWith('.doc')) return 'application/msword';
+  if (name.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  return '';
+};
+
+const isPdfMime = (mimeOrDataUrl) =>
+  mimeOrDataUrl.startsWith('data:application/pdf')
+  || mimeOrDataUrl.startsWith('data:application/x-pdf')
+  || mimeOrDataUrl === 'application/pdf'
+  || mimeOrDataUrl === 'application/x-pdf';
+
+const isAllowedEmployeeFile = (file) => {
+  const mime = inferMimeType(file);
+  return mime.startsWith('image/')
+    || mime === 'application/pdf'
+    || mime === 'application/x-pdf'
+    || mime === 'application/msword'
+    || mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+};
+
+const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    if (typeof result !== 'string') {
+      reject(new Error('Could not read the file'));
+      return;
+    }
+    const mime = inferMimeType(file);
+    const payload = result.includes(',') ? result.split(',')[1] : result;
+    resolve(mime ? `data:${mime};base64,${payload}` : result);
+  };
+  reader.onerror = () => reject(new Error('Could not read the file'));
+  reader.readAsDataURL(file);
+});
+
+const dataUrlToBlob = (dataUrl) => {
+  const comma = dataUrl.indexOf(',');
+  const header = comma >= 0 ? dataUrl.slice(0, comma) : '';
+  const payload = comma >= 0 ? dataUrl.slice(comma + 1) : '';
+  const mime = (header.match(/^data:([^;,]+)/) || [])[1] || 'application/octet-stream';
+  const binary = atob(payload.replace(/\s/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+};
+
+const StoredDocPreview = ({ dataUrl, label }) => {
+  const [blobUrl, setBlobUrl] = useState(null);
+
+  useEffect(() => {
+    if (!dataUrl || dataUrl.startsWith('data:image/')) {
+      setBlobUrl(null);
+      return undefined;
+    }
+    let url;
+    try {
+      url = URL.createObjectURL(dataUrlToBlob(dataUrl));
+      setBlobUrl(url);
+    } catch (error) {
+      setBlobUrl(null);
+    }
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [dataUrl]);
+
+  if (!dataUrl) return null;
+
+  if (dataUrl.startsWith('data:image/')) {
+    return (
+      <img
+        src={dataUrl}
+        alt={label}
+        style={{ marginTop: 8, maxWidth: '100%', borderRadius: 4, border: '1px solid #f0f0f0' }}
+      />
+    );
+  }
+
+  if (isPdfMime(dataUrl) && blobUrl) {
+    return (
+      <div style={{ marginTop: 8 }}>
+        <iframe
+          title={label}
+          src={blobUrl}
+          style={{ width: '100%', height: 260, border: '1px solid #f0f0f0', borderRadius: 4 }}
+        />
+        <div>
+          <Typography.Link
+            onClick={() => {
+              const url = URL.createObjectURL(dataUrlToBlob(dataUrl));
+              window.open(url, '_blank');
+              setTimeout(() => URL.revokeObjectURL(url), 60000);
+            }}
+          >
+            Open in new tab
+          </Typography.Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <Typography.Text type="secondary">Document attached — </Typography.Text>
+      <Typography.Link
+        href={blobUrl || undefined}
+        target="_blank"
+        rel="noreferrer"
+        onClick={(event) => {
+          if (!blobUrl) event.preventDefault();
+        }}
+      >
+        Open or download
+      </Typography.Link>
+    </div>
+  );
+};
 
 const EmployeeManagementPage = () => {
   const [form] = Form.useForm();
@@ -195,15 +323,30 @@ const EmployeeManagementPage = () => {
     const file = resolveUploadFile(info);
     if (!file) return;
 
-    const isImage = file.type.startsWith('image/');
-    if (!isImage) {
-      message.error('Only image files are allowed!');
+    const mime = inferMimeType(file);
+    const isImage = mime.startsWith('image/');
+    const isPdf = mime === 'application/pdf' || mime === 'application/x-pdf';
+    if (!isImage && !isPdf) {
+      message.error('Upload an image or a PDF.');
       return;
     }
 
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error('Image must be smaller than 2MB!');
+    const maxMb = isPdf ? 5 : 2;
+    if (file.size / 1024 / 1024 >= maxMb) {
+      message.error(`${isPdf ? 'PDF' : 'Image'} must be smaller than ${maxMb}MB!`);
+      return;
+    }
+
+    if (isPdf) {
+      beginUploadProcessing();
+      readFileAsDataUrl(file)
+        .then((dataUrl) => {
+          setPreviewUrl(dataUrl);
+          documentFieldsRef.current.passportPhoto = dataUrl;
+          message.success('PDF uploaded!');
+        })
+        .catch(() => message.error('Could not read the PDF. Try again.'))
+        .finally(() => endUploadProcessing());
       return;
     }
 
@@ -260,6 +403,11 @@ const EmployeeManagementPage = () => {
     const file = resolveUploadFile(info);
     if (!file) return;
 
+    if (!isAllowedEmployeeFile(file)) {
+      message.error('Upload an image, PDF, or Word document.');
+      return;
+    }
+
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
       message.error('File must be smaller than 5MB!');
@@ -267,19 +415,14 @@ const EmployeeManagementPage = () => {
     }
 
     beginUploadProcessing();
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      documentFieldsRef.current[fieldName] = dataUrl;
-      setDocPreviews((p) => ({ ...p, [fieldName]: dataUrl }));
-      message.success('Document uploaded!');
-      endUploadProcessing();
-    };
-    reader.onerror = () => {
-      message.error('Could not read the file. Try again.');
-      endUploadProcessing();
-    };
-    reader.readAsDataURL(file);
+    readFileAsDataUrl(file)
+      .then((dataUrl) => {
+        documentFieldsRef.current[fieldName] = dataUrl;
+        setDocPreviews((p) => ({ ...p, [fieldName]: dataUrl }));
+        message.success('Document uploaded!');
+      })
+      .catch(() => message.error('Could not read the file. Try again.'))
+      .finally(() => endUploadProcessing());
   };
 
   const onFinish = async (values) => {
@@ -364,7 +507,7 @@ const EmployeeManagementPage = () => {
   const exportToPDF = () => {
     const doc = new jsPDF();
     const companyName = 'PATH TO SUCCESS CONSULTANTS LTD';
-    const applicationName = 'Digital Cupboard';
+    const applicationName = 'Vintage Tea Manager';
     const reportName = 'Employee Details Report';
     const generatedOn = dayjs().format('DD/MM/YYYY HH:mm');
 
@@ -513,42 +656,9 @@ const EmployeeManagementPage = () => {
     }
   };
 
-  const renderStoredDocPreview = (dataUrl, label) => {
-    if (!dataUrl) return null;
-    if (dataUrl.startsWith('data:image/')) {
-      return (
-        <img
-          src={dataUrl}
-          alt={label}
-          style={{ marginTop: 8, maxWidth: '100%', borderRadius: 4, border: '1px solid #f0f0f0' }}
-        />
-      );
-    }
-    if (dataUrl.startsWith('data:application/pdf')) {
-      return (
-        <div style={{ marginTop: 8 }}>
-          <iframe
-            title={label}
-            src={dataUrl}
-            style={{ width: '100%', height: 260, border: '1px solid #f0f0f0', borderRadius: 4 }}
-          />
-          <div>
-            <Typography.Link href={dataUrl} target="_blank" rel="noreferrer">
-              Open in new tab
-            </Typography.Link>
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div style={{ marginTop: 8 }}>
-        <Typography.Text type="secondary">Document attached — </Typography.Text>
-        <Typography.Link href={dataUrl} target="_blank" rel="noreferrer">
-          Open or download
-        </Typography.Link>
-      </div>
-    );
-  };
+  const renderStoredDocPreview = (dataUrl, label) => (
+    <StoredDocPreview dataUrl={dataUrl} label={label} />
+  );
 
   const columns = [
     {
@@ -736,24 +846,18 @@ const EmployeeManagementPage = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="Passport Photo">
-            <Upload beforeUpload={() => false} maxCount={1} accept="image/*" onChange={handlePhotoUpload}>
+          <Form.Item label="Passport Photo" extra="Image or PDF, up to 2MB for images and 5MB for PDFs.">
+            <Upload beforeUpload={() => false} maxCount={1} accept="image/*,.pdf,application/pdf" onChange={handlePhotoUpload}>
               <Button icon={<InboxOutlined />}>Upload</Button>
             </Upload>
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt="Preview"
-                style={{ marginTop: 8, width: 180, maxWidth: '100%', height: 'auto' }}
-              />
-            )}
+            {renderStoredDocPreview(previewUrl, 'Passport photo')}
           </Form.Item>
 
-          <Form.Item label="Employment Contract">
+          <Form.Item label="Employment Contract" extra="Image, PDF, or Word document, up to 5MB.">
             <Upload 
               beforeUpload={() => false} 
               maxCount={1} 
-              accept=".pdf,.doc,.docx"
+              accept={FILE_ACCEPT}
               onChange={(info) => handleDocumentUpload(info, 'employmentContract')}
             >
               <Button icon={<InboxOutlined />}>Upload</Button>
@@ -773,11 +877,11 @@ const EmployeeManagementPage = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="Right to Work Document">
+          <Form.Item label="Right to Work Document" extra="Image, PDF, or Word document, up to 5MB.">
             <Upload 
               beforeUpload={() => false} 
               maxCount={1} 
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              accept={FILE_ACCEPT}
               onChange={(info) => handleDocumentUpload(info, 'rightToWorkDocument')}
             >
               <Button icon={<InboxOutlined />}>Upload</Button>

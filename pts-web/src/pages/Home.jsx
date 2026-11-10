@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Layout,
   Typography,
   Row,
   Col,
@@ -30,7 +29,6 @@ import ClockInWrapper from '../components/ClockInWrapper';
 import { apiClient } from '../config/api';
 import './Home.css';
 
-const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 const App = () => {
@@ -219,7 +217,7 @@ const App = () => {
     doc.setFontSize(16);
     doc.text('PATH TO SUCCESS CONSULTANTS', 14, 16);
     doc.setFontSize(11);
-    doc.text('Digital Cupboard', 14, 23);
+    doc.text('Vintage Tea Manager', 14, 23);
     doc.setFontSize(12);
     doc.text('Visa Expiry Notification Report', 14, 31);
     doc.setFontSize(10);
@@ -257,13 +255,9 @@ const App = () => {
 
   if (loading) {
     return (
-      <Layout style={{ minHeight: '100vh' }}>
-        <Content style={{ margin: '24px', padding: '24px', borderRadius: '8px' }}>
-          <div style={{ textAlign: 'center', padding: '50px' }}>
-            <Spin size="large" />
-          </div>
-        </Content>
-      </Layout>
+      <div style={{ textAlign: 'center', padding: '64px 16px' }}>
+        <Spin size="large" />
+      </div>
     );
   }
 
@@ -275,8 +269,8 @@ const App = () => {
   });
 
   return (
-    <Layout className="dashboard-layout">
-      <Content className="dashboard-content">
+    <div className="dashboard-layout">
+      <div className="dashboard-content">
         <div className="dashboard-hero">
           <div>
             <Text className="dashboard-hero-label">Operations Overview</Text>
@@ -444,8 +438,8 @@ const App = () => {
             </Card>
           </Col>
         </Row>
-      </Content>
-    </Layout>
+      </div>
+    </div>
   );
 };
 

@@ -460,7 +460,7 @@ const CustomerManagement = () => {
   const exportCustomersToPdf = () => {
     const doc = new jsPDF();
     const companyName = 'PATH TO SUCCESS CONSULTANTS LTD';
-    const applicationName = 'Digital Cupboard';
+    const applicationName = 'Vintage Tea Manager';
     const reportName = isEmployee ? 'My Customers Report' : 'Customer Details Report';
     const generatedOn = new Date().toLocaleString();
 

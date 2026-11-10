@@ -5,11 +5,7 @@ import {
   Button,
   Typography,
   Checkbox,
-  Layout,
-  Row,
-  Col,
   message,
-  Card,
 } from 'antd';
 import {
   UserOutlined,
@@ -29,8 +25,8 @@ const LoginPage = ({ onLoginSuccess }) => {
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'auto';
+    document.documentElement.style.overflow = 'auto';
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
@@ -77,181 +73,258 @@ const LoginPage = ({ onLoginSuccess }) => {
 };
 
   return (
-    <>
+    <div className="vtm-login">
       <style>{`
-        @keyframes loginFadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+        .vtm-login {
+          min-height: 100dvh;
+          display: grid;
+          grid-template-columns: minmax(280px, 1.05fr) minmax(340px, 0.95fr);
+          background: #f6f0e8;
+          color: #3b2618;
         }
-        @keyframes loginBgZoom {
-          from { background-position: center top; }
-          to { background-position: center bottom; }
+        .vtm-login-brand {
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          padding: 48px 56px;
+          background:
+            radial-gradient(circle at 18% 18%, rgba(224, 184, 116, 0.45), transparent 36%),
+            radial-gradient(circle at 82% 78%, rgba(90, 48, 28, 0.45), transparent 42%),
+            linear-gradient(160deg, #2c1d14 0%, #4a2e1f 48%, #6d452c 100%);
+          color: #f8f1e7;
         }
-        @keyframes floatBlob {
-          0% { transform: translate(0, 0); }
-          50% { transform: translate(16px, -12px); }
-          100% { transform: translate(0, 0); }
+        .vtm-login-brand::after {
+          content: '';
+          position: absolute;
+          width: 280px;
+          height: 280px;
+          right: -80px;
+          top: -70px;
+          border-radius: 50%;
+          border: 1px solid rgba(246, 231, 212, 0.18);
+        }
+        .vtm-login-brand-inner {
+          position: relative;
+          z-index: 1;
+          max-width: 460px;
+        }
+        .vtm-login-logo-plate {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: #fffaf4;
+          border-radius: 18px;
+          padding: 14px 18px;
+          margin-bottom: 28px;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+        }
+        .vtm-login-logo-plate img {
+          width: 210px;
+          max-width: 100%;
+          height: auto;
+          display: block;
+        }
+        .vtm-login-kicker {
+          margin: 0 0 10px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          font-size: 12px;
+          color: #e6c98a;
+        }
+        .vtm-login-brand h1 {
+          margin: 0 0 12px;
+          font-size: clamp(36px, 4vw, 56px);
+          line-height: 1.05;
+          font-weight: 650;
+          color: #fffaf4;
+        }
+        .vtm-login-brand p {
+          margin: 0;
+          max-width: 380px;
+          font-size: 16px;
+          line-height: 1.6;
+          color: rgba(248, 241, 231, 0.82);
+        }
+        .vtm-login-panel {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 32px 24px;
+        }
+        .vtm-login-card {
+          width: 100%;
+          max-width: 420px;
+        }
+        .vtm-login-mobile-logo {
+          display: none;
+        }
+        .vtm-login-card h2 {
+          margin: 0 0 6px;
+          font-size: 30px;
+          line-height: 1.2;
+          color: #3b2618;
+        }
+        .vtm-login-card .vtm-login-lead {
+          display: block;
+          margin-bottom: 28px;
+          color: #7a5a45;
+          font-size: 15px;
+        }
+        .vtm-login .ant-form-item-label > label {
+          color: #4a2e1f;
+          font-weight: 600;
+        }
+        .vtm-login .ant-input-affix-wrapper {
+          border-radius: 12px;
+          border-color: #e4d3c2;
+          background: #fffdfb;
+          padding: 10px 12px;
+        }
+        .vtm-login .ant-input-affix-wrapper:hover,
+        .vtm-login .ant-input-affix-wrapper-focused {
+          border-color: #b98749;
+          box-shadow: 0 0 0 3px rgba(185, 135, 73, 0.16);
+        }
+        .vtm-login-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 8px;
+        }
+        .vtm-login .ant-checkbox-checked .ant-checkbox-inner {
+          background-color: #8f5a33;
+          border-color: #8f5a33;
+        }
+        .vtm-login a.vtm-login-forgot,
+        .vtm-login a.vtm-login-forgot:hover,
+        .vtm-login a.vtm-login-forgot:focus {
+          color: #8f5a33;
+          font-weight: 600;
+        }
+        .vtm-login-submit {
+          height: 48px !important;
+          border: none !important;
+          border-radius: 12px !important;
+          font-weight: 650;
+          background: linear-gradient(90deg, #c49255 0%, #8f5a33 100%) !important;
+          box-shadow: 0 12px 24px rgba(143, 90, 51, 0.28);
+        }
+        .vtm-login-submit:hover {
+          filter: brightness(1.05);
+        }
+        @media (max-width: 900px) {
+          .vtm-login {
+            grid-template-columns: 1fr;
+          }
+          .vtm-login-brand {
+            display: none;
+          }
+          .vtm-login-panel {
+            min-height: 100dvh;
+            padding: 28px 20px 36px;
+            align-items: flex-start;
+          }
+          .vtm-login-mobile-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 22px;
+          }
+          .vtm-login-mobile-logo img {
+            width: min(220px, 70vw);
+            height: auto;
+          }
+          .vtm-login-card h2 {
+            font-size: 26px;
+          }
+        }
+        @media (max-width: 420px) {
+          .vtm-login-row {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .vtm-login-submit {
+            transition: none;
+          }
         }
       `}</style>
-      <Layout
-        style={{
-          height: '100vh',
-          backgroundImage: `
-            radial-gradient(circle at 15% 20%, rgba(201, 161, 91, 0.28), transparent 40%),
-            radial-gradient(circle at 85% 80%, rgba(120, 72, 45, 0.3), transparent 45%),
-            linear-gradient(135deg, #2f241d 0%, #3a2d24 35%, #4b3628 100%)
-          `,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          animation: 'loginBgZoom 20s ease-in-out infinite alternate',
-          overflow: 'hidden',
-          padding: '24px',
-          boxSizing: 'border-box'
-        }}
-      >
-      <div
-        style={{
-          position: 'absolute',
-          top: '-120px',
-          right: '-90px',
-          width: 360,
-          height: 360,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(224, 184, 116, 0.45), rgba(224, 184, 116, 0))',
-          filter: 'blur(4px)',
-          animation: 'floatBlob 9s ease-in-out infinite',
-          pointerEvents: 'none'
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '-150px',
-          left: '-120px',
-          width: 420,
-          height: 420,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(121, 76, 52, 0.5), rgba(121, 76, 52, 0))',
-          filter: 'blur(6px)',
-          animation: 'floatBlob 11s ease-in-out infinite',
-          pointerEvents: 'none'
-        }}
-      />
-      <Row
-        style={{ height: '100%', width: '100%', margin: 0 }}
-        justify="center"
-        align="middle"
-      >
-        <Col
-          xs={24}
-          sm={24}
-          md={20}
-          lg={14}
-          xl={11}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 0
-          }}
-        >
-          <Card
-            style={{
-              width: '100%',
-              maxWidth: '520px',
-              minHeight: 'auto',
-              margin: 0,
-              animation: 'loginFadeIn 0.6s ease-out',
-              transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-              background: 'linear-gradient(145deg, rgba(255, 250, 244, 0.95), rgba(255, 244, 232, 0.9))',
-              border: '1px solid rgba(214, 176, 117, 0.35)',
-              boxShadow: '0 24px 55px rgba(0, 0, 0, 0.35)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: 18
-            }}
-            bodyStyle={{ transition: 'transform 0.25s ease', padding: '34px 34px 28px' }}
-            hoverable
+      <section className="vtm-login-brand" aria-hidden="false">
+        <div className="vtm-login-brand-inner">
+          <div className="vtm-login-logo-plate">
+            <img src={COMPANY_LOGO_URL} alt="Vintage Tea Emporium" />
+          </div>
+          <p className="vtm-login-kicker">Restaurant workspace</p>
+          <h1>Vintage Tea Manager</h1>
+          <p>Staff, shifts, documents, and daily service, kept together in one place.</p>
+        </div>
+      </section>
+      <main className="vtm-login-panel">
+        <div className="vtm-login-card">
+          <div className="vtm-login-mobile-logo">
+            <img src={COMPANY_LOGO_URL} alt="Vintage Tea Emporium" />
+          </div>
+          <Title level={2}>Welcome back</Title>
+          <Text className="vtm-login-lead">Sign in to Vintage Tea Manager.</Text>
+          <Form
+            form={form}
+            name="login"
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            layout="vertical"
           >
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <img
-                src={COMPANY_LOGO_URL}
-                alt="Logo"
-                style={{ marginBottom: 10, width: '220px', maxWidth: '100%' }}
-              />
-              <Title level={3} style={{ marginBottom: 8, color: '#4a2e1f' }}>Vintage Tea Emporium</Title>
-              <Text style={{ color: '#7a5a45' }}>Welcome back to your restaurant workspace.</Text>
-            </div>
-            <Form
-              form={form}
-              name="login"
-              initialValues={{ remember: true }}
-              onFinish={onFinish}
-              layout="vertical"
+            <Form.Item
+              name="username"
+              label="Username or Email"
+              rules={[{ required: true, message: 'Please input your username or email!' }]}
             >
-              <Form.Item
-                name="username"
-                label="Username or Email"
-                rules={[{ required: true, message: 'Please input your username or email!' }]}
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Enter your username or email"
+                size="large"
+                autoComplete="username"
+              />
+            </Form.Item>
+            <Form.Item
+              name="password"
+              label="Password"
+              rules={[{ required: true, message: 'Please input your password!' }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="Enter your password"
+                size="large"
+                autoComplete="current-password"
+              />
+            </Form.Item>
+            <Form.Item>
+              <div className="vtm-login-row">
+                <Form.Item name="remember" valuePropName="checked" noStyle>
+                  <Checkbox>Remember me</Checkbox>
+                </Form.Item>
+                <Link className="vtm-login-forgot" style={{ color: '#8f5a33' }} onClick={() => navigate('/forgot-password')}>
+                  Forgot password?
+                </Link>
+              </div>
+            </Form.Item>
+            <Form.Item style={{ marginBottom: 0 }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                size="large"
+                loading={loading}
+                className="vtm-login-submit"
               >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Enter your username or email"
-                  size="large"
-                  style={{ borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.75)' }}
-                />
-              </Form.Item>
-              <Form.Item
-                name="password"
-                label="Password"
-                rules={[{ required: true, message: 'Please input your password!' }]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Enter your password"
-                  size="large"
-                  style={{ borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.75)' }}
-                />
-              </Form.Item>
-              <Form.Item>
-                <Row justify="space-between" align="middle">
-                  <Col>
-                    <Form.Item name="remember" valuePropName="checked" noStyle>
-                      <Checkbox>Remember me</Checkbox>
-                    </Form.Item>
-                  </Col>
-                  <Col>
-                    <Link onClick={() => navigate('/forgot-password')} style={{ cursor: 'pointer' }}>
-                      Forgot password?
-                    </Link>
-                  </Col>
-                </Row>
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  size="large"
-                  loading={loading}
-                  style={{
-                    borderRadius: 10,
-                    border: 'none',
-                    height: 44,
-                    background: 'linear-gradient(90deg, #b98749 0%, #8f5a33 100%)',
-                    boxShadow: '0 10px 22px rgba(143, 90, 51, 0.35)',
-                    fontWeight: 600
-                  }}
-                >
-                  Log in
-                </Button>
-              </Form.Item>
-            </Form>
-          </Card>
-        </Col>
-      </Row>
-      </Layout>
-    </>
+                Log in
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
+      </main>
+    </div>
   );
 };
 

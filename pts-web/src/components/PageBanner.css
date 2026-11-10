@@ -52,13 +52,24 @@
   font-weight: 600;
 }
 
+.shared-page-banner-actions .ant-space {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
   .shared-page-banner {
     flex-direction: column;
     padding: 18px;
   }
 
-  .shared-page-banner-right {
+  .shared-page-banner-right,
+  .shared-page-banner-actions .ant-space {
     align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .shared-page-banner-date {
+    white-space: normal;
   }
 }

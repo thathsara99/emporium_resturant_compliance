@@ -4,7 +4,7 @@
 }
 
 .dashboard-content {
-  margin: 16px;
+  margin: 0;
   padding: 0;
   background: transparent;
 }
@@ -57,6 +57,15 @@
   border: 1px solid rgba(177, 133, 86, 0.22);
 }
 
+.dashboard-card .ant-card-head-wrapper {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dashboard-card .ant-card-extra .ant-space {
+  flex-wrap: wrap;
+}
+
 .dashboard-top-col {
   display: flex;
 }
@@ -77,17 +86,18 @@
 
 .status-summary {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
 }
 
 .status-chip {
-  flex: 1;
+  flex: 1 1 120px;
   border-radius: 12px;
   padding: 10px 12px;
   border: 1px solid #f0f0f0;
   background: #fafafa;
-  min-height: 90px;
+  min-height: 78px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -112,21 +122,23 @@
   border-radius: 12px;
 }
 
-.dashboard-table .ant-table-thead > tr > th {
+body:not(.vtm-dark) .dashboard-table .ant-table-thead > tr > th {
   background: #f6ece0;
   color: #4a3323;
   font-weight: 600;
 }
 
-.dashboard-table .ant-table-tbody > tr:hover > td {
+body:not(.vtm-dark) .dashboard-table .ant-table-tbody > tr:hover > td {
   background: #fbf2e7 !important;
 }
 
-@media (max-width: 768px) {
-  .dashboard-content {
-    margin: 12px;
-  }
+body.vtm-dark .status-chip {
+  background: #2a211c;
+  border-color: #4a372c;
+  color: #f7f1ea;
+}
 
+@media (max-width: 768px) {
   .dashboard-hero {
     flex-direction: column;
     padding: 18px;

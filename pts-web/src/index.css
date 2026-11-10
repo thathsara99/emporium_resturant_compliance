@@ -11,13 +11,13 @@ body {
   box-shadow: 0 12px 24px rgba(61, 40, 27, 0.08);
 }
 
-.restaurant-admin-shell .ant-table-thead > tr > th {
+.restaurant-admin-shell:not(.is-dark) .ant-table-thead > tr > th {
   background: #f6ece0;
   color: #4a3323;
   font-weight: 600;
 }
 
-.restaurant-admin-shell .ant-table-tbody > tr:hover > td {
+.restaurant-admin-shell:not(.is-dark) .ant-table-tbody > tr:hover > td {
   background: #fbf2e7 !important;
 }
 
@@ -109,8 +109,19 @@ body {
   background: rgba(255, 235, 209, 0.12);
 }
 
-.restaurant-admin-shell .modern-admin-drawer .ant-drawer-header {
-  border-bottom: 1px solid rgba(177, 133, 86, 0.22);
+.modern-admin-drawer .ant-drawer-content,
+.modern-admin-drawer .ant-drawer-header {
+  background: #3a2a20;
+  color: #fffaf4;
+}
+
+.modern-admin-drawer .ant-drawer-header {
+  border-bottom: 1px solid rgba(246, 231, 212, 0.16);
+}
+
+.modern-admin-drawer .ant-drawer-title,
+.modern-admin-drawer .ant-drawer-close {
+  color: #fffaf4;
 }
 
 @media (max-width: 1200px) {
@@ -158,4 +169,307 @@ body {
 
 .modern-theme-toggle.ant-switch.ant-switch-checked {
   background: linear-gradient(90deg, #7b5132 0%, #523626 100%);
+}
+
+.restaurant-admin-shell {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.vtm-sider.ant-layout-sider {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #2c1d14 0%, #4a2e1f 58%, #5c3a28 100%) !important;
+  transition: flex 0.38s cubic-bezier(0.22, 1, 0.36, 1), width 0.38s cubic-bezier(0.22, 1, 0.36, 1), min-width 0.38s cubic-bezier(0.22, 1, 0.36, 1), max-width 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.vtm-sider .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 260px;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.24s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vtm-sider.ant-layout-sider-collapsed .ant-layout-sider-children {
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
+}
+
+.vtm-sider-brand-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding-right: 12px;
+}
+
+.vtm-sider-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 22px 8px 14px 18px;
+  color: #fffaf4;
+  text-decoration: none;
+}
+
+.vtm-nav-toggle {
+  margin-top: 20px;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 246, 234, 0.12);
+  color: #fffaf4;
+  cursor: pointer;
+}
+
+.vtm-nav-toggle:hover {
+  background: rgba(255, 246, 234, 0.22);
+}
+
+.vtm-sider-brand:hover {
+  color: #fffaf4;
+}
+
+.vtm-sider-kicker,
+.vtm-sider-name {
+  display: block;
+}
+
+.vtm-sider-kicker {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e6c98a;
+}
+
+.vtm-sider-name {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.vtm-sider-menu.ant-menu {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: transparent;
+  border-inline-end: none !important;
+}
+
+.vtm-sider-foot {
+  padding: 12px 14px 18px;
+  border-top: 1px solid rgba(246, 231, 212, 0.14);
+}
+
+.vtm-theme-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 246, 234, 0.08);
+  border: 1px solid rgba(246, 231, 212, 0.16);
+}
+
+.vtm-theme-switch button {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 246, 234, 0.78);
+  border-radius: 9px;
+  padding: 8px 0;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.vtm-theme-switch button.is-active {
+  background: #f6e7d4;
+  color: #3b2618;
+}
+
+.vtm-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 246, 234, 0.08);
+  color: #fffaf4;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vtm-account span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vtm-menu-fab.ant-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: #4a2e1f;
+  color: #fffaf4;
+  box-shadow: 0 10px 24px rgba(49, 31, 21, 0.28);
+}
+
+.vtm-sider-menu.ant-menu .ant-menu-item {
+  margin: 4px 12px;
+  width: calc(100% - 24px);
+  border-radius: 10px;
+  color: rgba(255, 246, 234, 0.9);
+}
+
+.vtm-sider-menu.ant-menu .ant-menu-item a {
+  color: inherit;
+}
+
+.vtm-sider-menu.ant-menu .ant-menu-item-selected {
+  background: rgba(255, 235, 209, 0.18) !important;
+  color: #fffaf4;
+}
+
+.vtm-sider-menu.ant-menu .ant-menu-item:hover {
+  background: rgba(255, 235, 209, 0.1) !important;
+  color: #fffaf4;
+}
+
+.vtm-main {
+  min-width: 0;
+  background: transparent;
+}
+
+.vtm-content {
+  margin: 20px 18px 8px;
+  padding: 0;
+  min-height: 280px;
+  min-width: 0;
+  transition: margin-top 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vtm-menu-fab.ant-btn {
+  animation: vtm-fab-in 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes vtm-fab-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vtm-sider.ant-layout-sider,
+  .vtm-sider .ant-layout-sider-children,
+  .vtm-content,
+  .vtm-menu-fab.ant-btn {
+    transition: none !important;
+    animation: none;
+  }
+}
+
+.vtm-session-warning {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff6ea;
+  border: 1px solid #f0c48a;
+  color: #8a4b12;
+}
+
+.vtm-footer.ant-layout-footer {
+  text-align: center;
+  background: transparent;
+  color: #7a5a45;
+  padding: 8px 16px 20px;
+}
+
+body.vtm-dark {
+  background: #120e0b;
+  color: #f7f1ea;
+}
+
+.restaurant-admin-shell.is-dark {
+  background: #120e0b;
+}
+
+.restaurant-admin-shell.is-dark .vtm-sider.ant-layout-sider {
+  background: linear-gradient(180deg, #1c1511 0%, #120e0b 100%) !important;
+  border-right: 1px solid #3a2c24;
+}
+
+.restaurant-admin-shell.is-dark .vtm-theme-switch button.is-active {
+  background: #d7a15a;
+  color: #1c1511;
+}
+
+.restaurant-admin-shell.is-dark .ant-card {
+  background: #241c17;
+  border-color: #4a372c;
+  box-shadow: none;
+}
+
+.restaurant-admin-shell.is-dark .ant-table-thead > tr > th {
+  background: #2c231d;
+  color: #f7f1ea;
+  font-weight: 600;
+}
+
+.restaurant-admin-shell.is-dark .ant-table-tbody > tr:hover > td {
+  background: #342920 !important;
+}
+
+.restaurant-admin-shell.is-dark .vtm-footer.ant-layout-footer {
+  color: rgba(247, 241, 234, 0.62);
+}
+
+.restaurant-admin-shell.is-dark .vtm-menu-fab.ant-btn {
+  background: #2a211c;
+  color: #f7f1ea;
+  border: 1px solid #5c4638;
+}
+
+.restaurant-admin-shell .ant-table-content,
+.restaurant-admin-shell .ant-table-body {
+  overflow-x: auto;
+}
+
+.vtm-main.is-nav-hidden .vtm-content {
+  margin-top: 68px;
+}
+
+@media (max-width: 767px) {
+  .vtm-content {
+    margin: 68px 12px 8px;
+  }
+
+  .vtm-session-warning {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

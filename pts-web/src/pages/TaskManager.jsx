@@ -10,22 +10,32 @@ import {
   Row,
   Select,
   Space,
+  TimePicker,
   Timeline,
   Tag,
   Typography,
   message
 } from 'antd';
-import { DeleteOutlined, EditOutlined, HistoryOutlined, PlusOutlined } from '@ant-design/icons';
+import { CommentOutlined, DeleteOutlined, EditOutlined, HistoryOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { apiClient } from '../config/api';
-import { getCurrentUserRole } from '../utils/auth';
+import { getCurrentUser, getCurrentUserRole } from '../utils/auth';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import PageBanner from '../components/PageBanner';
 
+dayjs.extend(customParseFormat);
+
 const { TextArea } = Input;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
+
+const formatDueLabel = (task) => {
+  const date = task.dueDate ? dayjs(task.dueDate).format('DD/MM/YYYY') : '';
+  const time = task.dueTime ? String(task.dueTime).slice(0, 5) : '';
+  return [date, time].filter(Boolean).join(' ');
+};
 
 const STATUSES = ['Pending', 'In Progress', 'Completed'];
 const PRIORITY_COLORS = { High: 'red', Medium: 'orange', Low: 'green' };
@@ -41,10 +51,18 @@ const TaskManager = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
   const [historyTaskTitle, setHistoryTaskTitle] = useState('');
+  const [commentTask, setCommentTask] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [postingComment, setPostingComment] = useState(false);
   const boardRef = useRef(null);
   const [form] = Form.useForm();
   const role = getCurrentUserRole();
+  const currentUserId = getCurrentUser()?.id;
   const canManageAll = ['HR Manager', 'Super Admin', 'System Admin'].includes(role);
+  const canManageTask = (task) =>
+    canManageAll || task.userId === currentUserId || task.createdBy === currentUserId;
 
   const fetchTasks = async () => {
     try {
@@ -99,7 +117,8 @@ const TaskManager = () => {
       priority: task.priority,
       status: task.status,
       userId: task.userId,
-      dueDate: task.dueDate ? dayjs(task.dueDate) : null
+      dueDate: task.dueDate ? dayjs(task.dueDate) : null,
+      dueTime: task.dueTime ? dayjs(String(task.dueTime).slice(0, 5), 'HH:mm') : null
     });
     setModalOpen(true);
   };
@@ -112,6 +131,7 @@ const TaskManager = () => {
         priority: values.priority,
         status: values.status,
         dueDate: values.dueDate ? values.dueDate.format('YYYY-MM-DD') : null,
+        dueTime: values.dueTime ? values.dueTime.format('HH:mm') : null,
         userId: values.userId
       };
       if (editingTask) {
@@ -161,6 +181,43 @@ const TaskManager = () => {
       setTaskHistory([]);
     } finally {
       setHistoryLoading(false);
+    }
+  };
+
+  const openComments = async (task) => {
+    setCommentTask(task);
+    setCommentText('');
+    setComments([]);
+    setCommentsLoading(true);
+    try {
+      const res = await apiClient.get(`/tasks/${task.id}/comments`);
+      if (res.data?.success) setComments(res.data.data || []);
+    } catch (error) {
+      message.error('Failed to load comments');
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const postComment = async () => {
+    const text = commentText.trim();
+    if (!commentTask || !text) return;
+    try {
+      setPostingComment(true);
+      const res = await apiClient.post(`/tasks/${commentTask.id}/comments`, { comment: text });
+      if (res.data?.success) {
+        setComments((prev) => [...prev, res.data.data]);
+        setCommentText('');
+        setTasks((prev) => prev.map((task) => (
+          task.id === commentTask.id
+            ? { ...task, commentCount: (task.commentCount || 0) + 1 }
+            : task
+        )));
+      }
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Failed to add comment');
+    } finally {
+      setPostingComment(false);
     }
   };
 
@@ -252,8 +309,8 @@ const TaskManager = () => {
                   <Card
                     key={task.id}
                     size="small"
-                    draggable
-                    onDragStart={() => setDraggedTaskId(task.id)}
+                    draggable={canManageTask(task)}
+                    onDragStart={() => canManageTask(task) && setDraggedTaskId(task.id)}
                     title={task.title}
                     extra={(
                       <Space size={8}>
@@ -278,27 +335,34 @@ const TaskManager = () => {
                       <Text strong>Assignee: </Text>
                       <Text>{task.assigneeName || task.assigneeEmail || '-'}</Text>
                     </div>
-                    {task.dueDate && (
+                    {formatDueLabel(task) && (
                       <div>
                         <Text strong>Due: </Text>
-                        <Text>{dayjs(task.dueDate).format('DD/MM/YYYY')}</Text>
+                        <Text>{formatDueLabel(task)}</Text>
                       </div>
                     )}
-                    <Space style={{ marginTop: 10 }}>
+                    <Space style={{ marginTop: 10 }} wrap>
+                      <Button size="small" icon={<CommentOutlined />} onClick={() => openComments(task)}>
+                        Comments{task.commentCount ? ` (${task.commentCount})` : ''}
+                      </Button>
                       <Button size="small" icon={<HistoryOutlined />} onClick={() => openHistory(task)}>
                         History
                       </Button>
-                      <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(task)}>
-                        Edit
-                      </Button>
-                      <Button
-                        size="small"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => deleteTask(task.id)}
-                      >
-                        Delete
-                      </Button>
+                      {canManageTask(task) && (
+                        <>
+                          <Button size="small" icon={<EditOutlined />} onClick={() => openEditModal(task)}>
+                            Edit
+                          </Button>
+                          <Button
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => deleteTask(task.id)}
+                          >
+                            Delete
+                          </Button>
+                        </>
+                      )}
                     </Space>
                   </Card>
                 ))}
@@ -340,9 +404,18 @@ const TaskManager = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="dueDate" label="Due Date">
-            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-          </Form.Item>
+          <Row gutter={12}>
+            <Col span={12}>
+              <Form.Item name="dueDate" label="Due Date">
+                <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="dueTime" label="Due Time">
+                <TimePicker style={{ width: '100%' }} format="HH:mm" minuteStep={5} />
+              </Form.Item>
+            </Col>
+          </Row>
           {canManageAll && (
             <Form.Item name="userId" label="Assign To">
               <Select allowClear placeholder="Select assignee">
@@ -378,6 +451,47 @@ const TaskManager = () => {
           {!historyLoading && (!taskHistory || taskHistory.length === 0) && (
             <Text type="secondary">No history records found.</Text>
           )}
+        </Card>
+      </Modal>
+
+      <Modal
+        title={`Comments - ${commentTask?.title || ''}`}
+        open={!!commentTask}
+        onCancel={() => setCommentTask(null)}
+        footer={null}
+        destroyOnClose
+      >
+        <Card loading={commentsLoading} bordered={false} bodyStyle={{ padding: 0 }}>
+          <div style={{ maxHeight: 320, overflowY: 'auto', marginBottom: 16 }}>
+            {comments.map((entry) => (
+              <div key={entry.id} style={{ marginBottom: 12 }}>
+                <Text strong>{entry.authorName || entry.authorEmail || 'Unknown'}</Text>
+                <div><Text>{entry.comment}</Text></div>
+                <Text type="secondary">{dayjs(entry.createdAt).format('DD/MM/YYYY HH:mm')}</Text>
+              </div>
+            ))}
+            {!commentsLoading && comments.length === 0 && (
+              <Text type="secondary">No comments yet. Add a progress update below.</Text>
+            )}
+          </div>
+          <TextArea
+            rows={3}
+            value={commentText}
+            maxLength={2000}
+            placeholder="Write a progress update"
+            onChange={(e) => setCommentText(e.target.value)}
+            onPressEnter={(e) => {
+              if (!e.shiftKey) {
+                e.preventDefault();
+                postComment();
+              }
+            }}
+          />
+          <div style={{ marginTop: 8, textAlign: 'right' }}>
+            <Button type="primary" loading={postingComment} disabled={!commentText.trim()} onClick={postComment}>
+              Post comment
+            </Button>
+          </div>
         </Card>
       </Modal>
     </div>

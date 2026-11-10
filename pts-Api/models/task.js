@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATEONLY,
       allowNull: true
     },
+    dueTime: {
+      type: DataTypes.STRING(5),
+      allowNull: true
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -60,6 +64,10 @@ module.exports = (sequelize, DataTypes) => {
     Task.hasMany(models.TaskHistory, {
       foreignKey: 'taskId',
       as: 'history'
+    });
+    Task.hasMany(models.TaskComment, {
+      foreignKey: 'taskId',
+      as: 'comments'
     });
   };
 

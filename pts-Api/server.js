@@ -45,6 +45,14 @@ db.sequelize.sync({ force: false })
       });
       console.log('🧩 Added employees.visaRenewalRequested column');
     }
+    const taskTable = await queryInterface.describeTable('tasks');
+    if (!taskTable.dueTime) {
+      await queryInterface.addColumn('tasks', 'dueTime', {
+        type: DataTypes.STRING(5),
+        allowNull: true
+      });
+      console.log('🧩 Added tasks.dueTime column');
+    }
     console.log('🛠️ Database synced!');
   })
   .catch(err => {
